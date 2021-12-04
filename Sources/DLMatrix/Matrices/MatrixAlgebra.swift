@@ -29,7 +29,7 @@
 
 import Accelerate
 
-public func ginv(_ X: Matrix ) -> Matrix {
+public func GeneralizedInverse(_ X: Matrix ) -> Matrix {
     
     if X.rows != X.cols {
         return Matrix(0,0)
@@ -75,11 +75,11 @@ public func ginv(_ X: Matrix ) -> Matrix {
 /// This function estimates a Principal Coponent Rotation on the passed data matrix.
 /// - Parameter X: A data matrix
 /// - Returns: A tuple with the eigenvalues (d), the eigenvectors (V) and the rotation on the original data (X).
-public func PCA(_ X: Matrix ) -> (d: Vector, V: Matrix, X: Matrix)? {
+public func PCRotation(_ X: Matrix ) -> (d: Vector, V: Matrix, X: Matrix)? {
     let A = X
     A.center()
     
-    guard let s = svd( A ) else { return nil }
+    guard let s = SingularValueDecomposition( A ) else { return nil }
     
     let d = s.d / ( sqrt( max(1.0, Double( A.rows )-1.0)))
     let V = s.V
@@ -95,7 +95,7 @@ public func PCA(_ X: Matrix ) -> (d: Vector, V: Matrix, X: Matrix)? {
 /// This decomposes the matrix such that **A = U * Matrix( d.count,d.count,d,true) * V.transpose()**.
 /// - Parameter A: The matrix to partition
 /// - Returns: The left and right eigenvalue matrices and the vector of igenvalues.
-public func svd(_ A: Matrix) -> (U: Matrix, d: Vector, V: Matrix)? {
+public func SingularValueDecomposition(_ A: Matrix) -> (U: Matrix, d: Vector, V: Matrix)? {
     var M = __CLPK_integer(A.rows);
     var N = __CLPK_integer(A.cols);
     

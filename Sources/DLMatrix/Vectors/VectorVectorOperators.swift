@@ -113,24 +113,13 @@ public func .*(lhs: Vector, rhs: Vector) -> Double {
     return ret
 }
 
-
-/// Sums of a Vector
-/// - Parameters:
-///   - v: The vector to sum
-/// - Returns;
-///   - The sum of the `Vector`.
-public func sum(_ v: Vector) -> Double {
-    return v .* Vector(repeating: 1.0, count: v.count)
-}
-
-
 /// Estimates distance between two vectors
 /// - Parameters:
 ///   - vec1: The first vector
 ///   - vec2: The second vector
 /// - Returns: The distance between them
 public func distance(_ vec1: Vector, _ vec2: Vector ) -> Double {
-    return sqrt(sum((vec1 - vec2).map { $0 * $0 }))
+    return sqrt( (vec1 - vec2).map { $0 * $0 }.sum )
 }
 
 /// Estimates distance between two vectors
@@ -139,6 +128,6 @@ public func distance(_ vec1: Vector, _ vec2: Vector ) -> Double {
 ///   - vec2: The second vector
 /// - Returns: The distance between them
 public func amovaDistance(_ vec1: Vector, _ vec2: Vector ) -> Double {
-    return sum((vec1 - vec2).map { $0 * $0 }) / 2.0 
+    return ((vec1 - vec2).map { $0 * $0 }).sum / 2.0 
 }
 

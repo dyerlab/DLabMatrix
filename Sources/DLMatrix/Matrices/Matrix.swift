@@ -40,7 +40,7 @@ public class Matrix {
     
     
     /// The storage for the values in the matrix
-    public var values: Vector
+    var values: Vector
     
     /// The number of rows in the matrix
     public var rows: Int {
