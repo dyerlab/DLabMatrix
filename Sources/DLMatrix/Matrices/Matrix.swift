@@ -242,13 +242,6 @@ extension Matrix: CustomStringConvertible {
 
 extension Matrix {
     
-    
-    
-
-
-
-
-    
     public func center()  {
         let µ = self.colSum / Double( self.rows )
         for i in 0..<rows {
@@ -256,7 +249,6 @@ extension Matrix {
                 self[i,j] = self[i,j] - µ[j]
             }
         }
-        
     }
     
     
