@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import DLMatrix
+@testable import DLabMatrix
 
 class MatrixTests: XCTestCase {
     

@@ -9,7 +9,7 @@ import XCTest
 import SceneKit
 import CoreGraphics
 
-@testable import DLMatrix
+@testable import DLabMatrix
 
 class VectorTests: XCTestCase {
     

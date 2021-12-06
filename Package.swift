@@ -8,8 +8,8 @@ let package = Package(
     platforms: [.iOS(.v14), .macOS(.v12)],
     products: [
         .library(
-            name: "DLMatrix",
-            targets: ["DLMatrix"]),
+            name: "DLabMatrix",
+            targets: ["DLabMatrix"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -17,10 +17,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DLMatrix",
+            name: "DLabMatrix",
             dependencies: []),
         .testTarget(
-            name: "DLMatrixTests",
-            dependencies: ["DLMatrix"]),
+            name: "DLabMatrixTests",
+            dependencies: ["DLabMatrix"]),
     ]
 )
