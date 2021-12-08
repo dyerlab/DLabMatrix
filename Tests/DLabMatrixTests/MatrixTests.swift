@@ -22,8 +22,13 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual( M.diagonal.sum, 4.0 )
     
         
+        let rsum = M.rowSum
+        XCTAssertEqual( rsum.sum, M.sum )
+        XCTAssertEqual( rsum.count, 4 )
+        XCTAssertEqual( rsum[0], 4.0 )
         
-        
+        XCTAssertEqual( M.rowSum, M.colSum )
+        XCTAssertEqual( M.rowMatrix, Matrix(4, 4, 4.0) )
         
     }
 
@@ -47,6 +52,7 @@ class MatrixTests: XCTestCase {
         
         let populations = ["RVA","RVA","RVA","Olympia","Olympia"]
         let X = Matrix.designMatrix(strata: populations )
+        
         
         
         XCTAssertEqual( X.rows, 5)
@@ -92,6 +98,34 @@ class MatrixTests: XCTestCase {
         
         
     }
+    
+    
+    
+    
+    
+    func testConversion_DistanceCovarianceDistance() throws {
+        
+        var D = Matrix(3,3,0.0)
+        D[0,1] = 2.0
+        D[0,2] = 5.0
+        D = D + D.transpose
+        
+        XCTAssertEqual( D[1,0], D[0,1] )
+        XCTAssertEqual( D.diagonal.sum, 0.0 )
+        XCTAssertEqual( D[1,2], 0.0 )
+        
+        let C = D.asCovariance
+        XCTAssertEqual( C.rows, 3 )
+        XCTAssertEqual( C.cols, C.rows )
+        XCTAssertEqual( C[0,1], C[1,0] )
+        XCTAssertEqual( C[2,1], C[1,2] )
+        
+        let D1 = C.asDistance
+        XCTAssertEqual( (D.values - D1.values).sum, 0.0, accuracy: 0.00000000001 )
+        
+    }
+    
+    
     
 }
 

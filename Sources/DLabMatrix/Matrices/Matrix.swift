@@ -99,6 +99,7 @@ public class Matrix {
         }
     }
     
+    
     /// Returns sum of columns
     public var colSum: Vector {
         get {
@@ -107,7 +108,46 @@ public class Matrix {
             return V.values
         }
     }
+    
+    /// Returns matrix of rowsums, for colsums take transpose first
+    public var rowMatrix: Matrix {
+        get {
+            let v = self.rowSum
+            let X = Matrix( self.rows, self.cols )
+            for i in 0 ..< self.rows {
+                for j in 0 ..< self.cols {
+                    X[i,j] = v[j]
+                }
+            }
+            return X
+        }
+    }
+    
+    /// Returns matrix as covariance type
+    public var asCovariance: Matrix {
+        get {
+            let K = Double( self.rows )
+            let D1: Matrix = self.rowMatrix.transpose
+            let D2: Matrix = self.rowMatrix
+            let D: Matrix =  (D1 + D2 ) / K
+            let rhs = self.sum / pow( K, 2.0 )
+            return (self * -1.0 + D - rhs) * 0.5
+        }
+    }
 
+    /// Converts from covariance to distance
+    public var asDistance: Matrix {
+        get {
+            let K = self.rows
+            let D = Matrix(K, K, 0.0 )
+            for i in 0 ..< K {
+                for j in 0 ..< K {
+                    D[i,j] = self[i,i] + self[j,j] - self[i,j] * 2.0
+                }
+            }
+            return D
+        }
+    }
 
     /// The tanspose of the matrix
     public var transpose: Matrix {
@@ -290,9 +330,12 @@ extension Matrix {
         let X = Matrix.designMatrix(strata: strata)
         let H = X .* GeneralizedInverse( X.transpose .* X ) .* X.transpose
         
-        return H 
+        return H
         
     }
+    
+    
+    
     
     
 }

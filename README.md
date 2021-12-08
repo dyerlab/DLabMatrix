@@ -51,7 +51,8 @@ A Vector object is simple `[Double]` useable for normal algebraic operations.  T
 - `normal:Vector` Normalize vector for length = 1.0
 - `asCGPoint:CGPoint` Quick conversion to `CGPoint`
 - `asSCNVector3:SCNVector3` Quick conversion to `SCNVector3`
-
+- `asCovariance: Matrix` Converts (presumably) instance of distance to covariance.
+- `asDistance: Matrix` Converts (presumably) instance of covariance matrix to distance.
 
 **Static Constructors**
 
@@ -66,6 +67,10 @@ A Vector object is simple `[Double]` useable for normal algebraic operations.  T
 - `.largest(other: Vector) -> Vector` Returns a `Vector` with maximal values from each. 
 - `.constrain(minimum: Double, maximum: Double) -> Vector` Returns vector with values bound on the range `[minimum ... maximum]`
 - `.limitAnnealingMagnitude( temp: Double) -> Vector` Limits movement vector distance for simulated annealing functions.
+
+**Static Functions**
+- `.designMatrix( strata: [String] ) -> Matrix` Returns (N x K) design matrix.
+- `.idempotentHatMatrix( strata: [String] ) -> Matrix` Returns N x N idempotent Hat matrix, **H**.
  
 #### Operator Overloads
 
