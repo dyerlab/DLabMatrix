@@ -265,3 +265,34 @@ extension Matrix {
 
     
 }
+
+
+
+
+extension Matrix {
+    
+    public static func designMatrix( strata: [String] ) -> Matrix {
+        
+        let r = strata.count
+        let colNames = Array<String>( Set<String>(strata) ).sorted()
+        let X = Matrix(r, colNames.count, 0.0 )
+        
+        for i in 0 ..< r {
+            if let c = colNames.firstIndex(where: { $0 == strata[i] } ) {
+                X[i,c] = 1.0
+            }
+        }
+        return X
+    }
+    
+    public static func idempotentHatMatrix( strata: [String] ) -> Matrix {
+        
+        let X = Matrix.designMatrix(strata: strata)
+        let H = X .* GeneralizedInverse( X.transpose .* X ) .* X.transpose
+        
+        return H 
+        
+    }
+    
+    
+}
