@@ -171,3 +171,11 @@ Performs a principal component rotation on the original data matrix `X` returnin
 Performs a singular value spectral decomposition on the matrix `A` resulting in left and right eigenvalues (`U` and `V`) as well as eigenvalues in `d`. If the original matrix was not factorable, no values are returned.
 
 
+<hr>
+
+## Versions Highlights
+
+
+1.0.2 - added designMatrix, idepotentHatMatrix, asCovariance, asDistance, rowMatrix
+1.0.1 - Added Unit tests.
+1.0.0 - Intial Import
