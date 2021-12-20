@@ -175,7 +175,7 @@ Performs a singular value spectral decomposition on the matrix `A` resulting in 
 
 ## Versions Highlights
 
-
+1.0.3 - Refactoring some stuff.
 1.0.2 - added designMatrix, idepotentHatMatrix, asCovariance, asDistance, rowMatrix
 1.0.1 - Added Unit tests.
 1.0.0 - Intial Import

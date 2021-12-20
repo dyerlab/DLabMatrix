@@ -51,7 +51,7 @@ class MatrixTests: XCTestCase {
     func testDesignMatrix() throws {
         
         let populations = ["RVA","RVA","RVA","Olympia","Olympia"]
-        let X = Matrix.designMatrix(strata: populations )
+        let X = Matrix.DesignMatrix(strata: populations )
         
         
         
@@ -73,7 +73,7 @@ class MatrixTests: XCTestCase {
     func testIdempotentDesignMatrix() throws {
         
         let populations = ["RVA","RVA","RVA","Olympia","Olympia"]
-        let X = Matrix.idempotentHatMatrix(strata: populations )
+        let X = Matrix.IdempotentHatMatrix(strata: populations )
          
         let H = Matrix(5,5,0.0)
         let c1 = 1.0 / 3.0
