@@ -13,7 +13,7 @@ This package is the foundation layer for all matrix algebra routines needed in s
 **Swift Package Manager** (XCode 13)
 
 1. Select **File** > **Swift Packages** > **Add Package Dependency…** from the **File** menu.
-2. Paste `https://github.com/dyerlab/DLMatrix.git` in the dialog box.
+2. Paste `https://github.com/dyerlab/DLabMatrix.git` in the dialog box.
 3. Follow the Xcode's instruction to complete the installation.
 
 > Why not CocoaPods, or Carthage, or blank?
