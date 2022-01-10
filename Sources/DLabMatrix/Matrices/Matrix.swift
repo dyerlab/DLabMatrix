@@ -38,7 +38,6 @@ import Accelerate
 ///  internally to use the `Accelerate` library for
 public class Matrix {
     
-    
     /// The storage for the values in the matrix
     var values: Vector
     
@@ -134,7 +133,7 @@ public class Matrix {
             return (self * -1.0 + D - rhs) * 0.5
         }
     }
-
+    
     /// Converts from covariance to distance
     public var asDistance: Matrix {
         get {
@@ -148,7 +147,7 @@ public class Matrix {
             return D
         }
     }
-
+    
     /// The tanspose of the matrix
     public var transpose: Matrix {
         get {
@@ -157,7 +156,7 @@ public class Matrix {
             return ret
         }
     }
-
+    
     
     
     /// Overload of the subscript operator
@@ -228,6 +227,25 @@ public class Matrix {
         self.values  = Vector(repeating: 0.0, count: r*c)
         self.rowNames = rowNames
         self.colNames = colNames
+    }
+    
+    
+    /// Grab a row as a vector
+    public func getRow( r: Int) -> Vector {
+        var ret = Vector(repeating: 0.0, count: self.cols )
+        for c in 0 ..< self.cols {
+            ret[c] = self[r,c]
+        }
+        return ret
+    }
+    
+    /// Grab a column as a vector
+    public func getCol( c: Int ) -> Vector {
+        var ret = Vector( repeating: 0.0, count: self.rows )
+        for r in 0 ..< self.rows {
+            ret[r] = self[r,c]
+        }
+        return ret
     }
     
     
@@ -302,7 +320,7 @@ extension Matrix {
         return ret
     }
     
-
+    
     
 }
 
@@ -339,3 +357,51 @@ extension Matrix {
     
     
 }
+
+
+
+
+
+extension Matrix: rSourceConvertible {
+    
+    /// This converts the matrix to an R object.  If the matrix has column names then it will be made into a tibble else, it will be made into a matrix.
+    public func toR() -> String {
+        var ret = [String]()
+        
+        let hasColNames = !self.colNames.compactMap({$0.isEmpty}).allSatisfy({$0})
+        
+        if hasColNames { // Result will be tibble
+            ret.append("tibble(")
+            
+            // If there are rownames, put them in as Key
+            if !self.rowNames.compactMap( {$0.isEmpty}).allSatisfy({$0} ) {
+                var vals = String( "  Key = c(")
+                vals += rowNames.map{ String("'\($0)'")}.joined(separator: ", ")
+                vals += "),"
+                ret.append( vals )
+            }
+            
+            for i in 0 ..< colNames.count {
+                let name = colNames[i]
+                var vals = String( "  \(name) = ")
+                vals += self.getCol(c:i).toR()
+                if i < (colNames.count-1) {
+                    vals += ","
+                }
+                ret.append( vals )
+            }
+            
+            
+            ret.append( ")" )
+            return ret.joined(separator: "\n")
+        }
+        else { // Result is Matrix
+            var vals = "matrix( c("
+            vals += self.values.compactMap{ String("\($0)")}.joined(separator: ",")
+            vals += String( "), ncol=\(self.cols), nrow=\(self.rows), byrow=TRUE)")
+            return vals
+        }
+    }
+    
+}
+

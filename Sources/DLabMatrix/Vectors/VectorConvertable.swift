@@ -8,7 +8,7 @@
 //         Making Population Genetic Software That Doesn't Suck
 //
 //  
-//  VectorConvertable.swift
+//  VectorConvertible.swift
 //  DyerLabKit
 //
 //  Created by Rodney Dyer on 11/24/20.
@@ -31,7 +31,7 @@
 import Foundation
 
 /// This is a simple protocol that other objects can adopt to be able to generate matrix repsresenations.
-public protocol VectorConvertable {
+public protocol VectorConvertible {
     
     // Any object that adopts this protocol must overload this method
     func asVector() -> Vector

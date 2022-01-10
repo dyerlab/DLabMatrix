@@ -70,6 +70,19 @@ class VectorTests: XCTestCase {
         XCTAssertEqual( amovaDistance( [ 1.0, 1.0, 0.0, 0.0], [ 0.0, 0.0, 1.0, 1.0] ), 2.0 )
 
     }
+    
+    
+    
+    func testRSourceConvertable() throws {
+        
+        let x = Vector(repeating: 1.0, count: 10)
+        XCTAssertEqual( x.count, 10 )
+        
+        let r = x.toR()
+        XCTAssertFalse( r.isEmpty )
+        XCTAssertEqual( r, "c(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)")
+        
+    }
 
 }
 

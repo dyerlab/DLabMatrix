@@ -125,6 +125,33 @@ class MatrixTests: XCTestCase {
         
     }
     
+
+    
+    
+    func testMatrixRSourceConvertable() throws {
+        
+        var D = Matrix(3,3,0.0)
+        D[0,1] = 2.0
+        D[0,2] = 5.0
+        D = D + D.transpose
+        
+        // as Matrix Output
+        let ret1 = D.toR()
+        XCTAssertFalse( ret1.isEmpty )
+        XCTAssertEqual( ret1, "matrix( c(0.0,2.0,5.0,2.0,0.0,0.0,5.0,0.0,0.0), ncol=3, nrow=3, byrow=TRUE)")
+        
+        
+        // as Tibble without Key
+        D.colNames = ["First","Second","Third"]
+        let ret2 = D.toR()
+        XCTAssertFalse( ret2.isEmpty )
+        XCTAssertEqual( ret2.count, 93)
+        
+        D.rowNames  = ["Olympia","Ames","Richmond"]
+        let ret3 = D.toR()
+        XCTAssertEqual( ret3.count, 135)
+    }
+    
     
     
 }

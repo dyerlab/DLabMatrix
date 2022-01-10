@@ -31,7 +31,7 @@ import Foundation
 
 
 /// This is a simple protocol that other objects can adopt to be able to generate matrix repsresenations.
-public protocol MatrixConvertable {
+public protocol MatrixConvertible {
     
     // All Objects conforming to this protocol must implement this function
     func asMatrix() -> Matrix

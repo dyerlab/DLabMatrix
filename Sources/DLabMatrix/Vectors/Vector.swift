@@ -213,6 +213,20 @@ extension Vector {
 
 
 
+// MARK: - Overriding rSourceConverible
+extension Vector: rSourceConvertible {
+    
+    public func toR() -> String {
+        var ret = "c("
+        ret += self.map{ String("\($0)")}.joined(separator: ", ")
+        ret += ")"
+        return ret
+    }
+    
+}
+
+
+
 
 
 
