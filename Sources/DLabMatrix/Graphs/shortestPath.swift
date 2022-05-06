@@ -7,11 +7,16 @@
 
 import Foundation
 
-
-func shortestPathFloydWarshall( A: Matrix ) -> Matrix {
+/*
+ The Floyd Warshall method for determining the shortest path
+ between all pairs of nodes.
+ */
+func shortestPath( A: Matrix ) -> Matrix {
     let N = A.rows
     let D = Matrix(N,N)
     let gMax = A.values.sum + 1.0
+    D.rowNames = A.rowNames
+    D.colNames = A.colNames
     
     for i in 0 ..< N {
         for j in 0 ..< N {
