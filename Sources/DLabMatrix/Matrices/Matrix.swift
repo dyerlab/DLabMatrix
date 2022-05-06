@@ -30,8 +30,6 @@
 import Foundation
 import Accelerate
 
-
-
 /// The base Matrix Class
 ///
 /// This is the base class for 2-dimensinoal matrix data.  It is defined as a row-major matrix and is configured
@@ -267,13 +265,18 @@ extension Matrix: Equatable {
     ///   - rhs: The right matrix
     /// - Returns: Returns a `Bool` indicating element-wise equality and shape of the two matrices
     public static func ==(lhs: Matrix, rhs: Matrix) -> Bool {
-        return lhs.values == rhs.values && lhs.rows == rhs.rows && lhs.cols == rhs.cols
+        return lhs.values == rhs.values &&
+                lhs.rows == rhs.rows &&
+                lhs.cols == rhs.cols &&
+                lhs.rowNames == rhs.rowNames &&
+                lhs.colNames == rhs.colNames
     }
 }
 
 
 
-/// Conforms to the Printing Protocol
+// MARK: - Conforms to the Printing Protocol
+
 extension Matrix: CustomStringConvertible {
     public var description: String {
         var ret = String( "Matrix: (\(rows) x \(cols))")
