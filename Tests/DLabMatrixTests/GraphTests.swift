@@ -68,7 +68,6 @@ class GraphTests: XCTestCase {
     
     
     func testGraphNull() throws {
-        
         let graphNull = Graph()
         XCTAssertEqual( graphNull.edges.count, 0 )
         XCTAssertEqual( graphNull.nodes.count, 0 )
