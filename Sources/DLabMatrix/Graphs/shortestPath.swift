@@ -59,9 +59,6 @@ func shortestPath( A: Matrix ) -> Matrix {
             }
         }
     }
-    
-    
-    
     return D
     
 }

@@ -15,6 +15,44 @@ class Graph {
         return nodes.count
     }
     
+    var adjacency: Matrix {
+        let N = nodes.count
+        let ret = Matrix(N, N)
+        
+        edges.forEach({ edge in
+            if let idx1 = nodes.firstIndex(where: {$0.id == edge.from} ),
+               let idx2 = nodes.firstIndex(where: {$0.id == edge.to} ) {
+                ret[idx1, idx2] = 1
+            }
+        })
+        
+        ret.rowNames = nodes.map { $0.label }
+        ret.colNames = nodes.map { $0.label }
+        
+        return ret
+    }
+    
+    var incidence: Matrix {
+        let N = nodes.count
+        let ret = Matrix(N, N)
+        
+        edges.forEach({ edge in
+            if let idx1 = nodes.firstIndex(where: {$0.id == edge.from} ),
+               let idx2 = nodes.firstIndex(where: {$0.id == edge.to} ) {
+                ret[idx1, idx2] = edge.weight
+            }
+        })
+        
+        ret.rowNames = nodes.map { $0.label }
+        ret.colNames = nodes.map { $0.label }
+        
+        return ret
+    }
+    
+    var shortestPaths: Matrix {
+        return shortestPath(A: self.incidence )
+    }
+    
     init() {
         nodes = [Node]()
         edges = [Edge]()
@@ -44,47 +82,6 @@ class Graph {
 
 
 
-
-extension Graph: MatrixConvertible {
-    
-    func asMatrix() -> Matrix {
-        let N = nodes.count
-        let ret = Matrix(N, N)
-        
-        edges.forEach({ edge in
-            if let idx1 = nodes.firstIndex(where: {$0.id == edge.from} ),
-               let idx2 = nodes.firstIndex(where: {$0.id == edge.to} ) {
-                ret[idx1, idx2] = edge.weight
-            }
-        })
-        
-        
-        ret.rowNames = nodes.map { $0.label }
-        ret.colNames = nodes.map { $0.label }
-        
-        
-        return ret
-    }
-    
-    func asAdjacency() -> Matrix {
-        let N = nodes.count
-        let ret = Matrix(N, N)
-        
-        edges.forEach({ edge in
-            if let idx1 = nodes.firstIndex(where: {$0.id == edge.from} ),
-               let idx2 = nodes.firstIndex(where: {$0.id == edge.to} ) {
-                ret[idx1, idx2] = 1
-            }
-        })
-        
-        ret.rowNames = nodes.map { $0.label }
-        ret.colNames = nodes.map { $0.label }
-        
-        return ret
-    }
-    
-    
-}
 
 
 extension Graph: CustomStringConvertible {
