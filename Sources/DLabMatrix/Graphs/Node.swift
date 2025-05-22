@@ -14,7 +14,6 @@ struct Node : Codable {
     var edges: [Edge]
     var coordinate: Vector
     
-    
     enum CodingKeys: String, CodingKey {
         case id
         case label
