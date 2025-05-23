@@ -1,39 +1,45 @@
 //
 //  GraphTests.swift
-//  
+//
+//                      _                 _       _
+//                   __| |_   _  ___ _ __| | __ _| |__
+//                  / _` | | | |/ _ \ '__| |/ _` | '_ \
+//                 | (_| | |_| |  __/ |  | | (_| | |_) |
+//                  \__,_|\__, |\___|_|  |_|\__,_|_.__/
+//                        |_ _/
+//
+//         Making Population Genetic Software That Doesn't Suck
 //
 //  Created by Rodney Dyer on 5/6/22.
-//
+//  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
 
-import XCTest
-@testable import DLabMatrix
+import Testing
+import Foundation
+import DLabMatrix
 
-class GraphTests: XCTestCase {
+struct GraphTests {
     
-    func testNode() throws {
+    @Test func testNode() throws {
         let Node_Aqu = Node(label: "Aqu", size:  13.267567610943, coord: [23.28550, -110.10429] )
-        var Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
+        let Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
         
-        XCTAssertEqual( Node_Aqu.coordinate.count, 2)
-        XCTAssertEqual( Node_Aqu.label, "Aqu")
-        XCTAssertEqual( Node_Aqu.size, 13.267567610943)
-        XCTAssertEqual( Node_Aqu.coordinate, [23.28550, -110.10429]  )
+        #expect( Node_Aqu.coordinate!.count == 2)
+        #expect( Node_Aqu.name == "Aqu")
+        #expect( Node_Aqu.size == 13.267567610943)
+        #expect( Node_Aqu.coordinate! == [23.28550, -110.10429]  )
         
         print(String("\(Node_Aqu)"))
-        XCTAssertEqual(String("\(Node_Aqu)"), "Aqu: 13.267567610943 ( [23.2855, -110.10429] )")
-        
-        XCTAssertFalse( Node_73 == Node_Aqu )
-        
+        #expect(String("\(Node_Aqu)") == "Aqu: 13.267567610943 ( Optional([23.2855, -110.10429])")
+        #expect( Node_73 != Node_Aqu )
         
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         
         // Add an edge
         let edge = Edge(from: Node_73, to: Node_Aqu, weight: 3.69526146781118)
-        Node_73.edges.append( edge )
-        XCTAssertEqual( edge.from, Node_73.id )
-        XCTAssertEqual( edge.to, Node_Aqu.id )
-        XCTAssertEqual( edge.weight, 3.69526146781118 )
+        #expect( edge.from == Node_73.id )
+        #expect( edge.to == Node_Aqu.id )
+        #expect( edge.weight  == 3.69526146781118 )
         
         // Encode
         let data = try encoder.encode( Node_73 )
@@ -41,49 +47,42 @@ class GraphTests: XCTestCase {
         let decoder = JSONDecoder()
         let New_73 = try decoder.decode( Node.self, from: data )
         
-        XCTAssertEqual( Node_73, New_73 )
+        #expect( Node_73 == New_73 )
         print(String("\(New_73)"))
         
-        XCTAssertEqual( Node_73.edges.first, New_73.edges.first )
-        
-        
     }
     
-    func testEdge() throws {
+    @Test func testEdge()  {
         
         let Node_Aqu = Node(label: "Aqu", size:  13.267567610943, coord: [23.28550, -110.10429] )
-        var Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
+        let Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
         let Node_ESan = Node(label: "ESan", size:  8.14010246388221, coord: [24.45879, -110.36857] )
-        
         let edge73_Aqu = Edge(from: Node_73, to: Node_Aqu, weight: 3.69526146781118)
         let edge73_ESan = Edge(from: Node_73, to: Node_ESan, weight: 3.80626949664509)
-        Node_73.edges.append( edge73_Aqu )
-        Node_73.edges.append( edge73_ESan )
         
-        XCTAssertNotEqual( edge73_Aqu, edge73_ESan)
-        
+        #expect( edge73_Aqu != edge73_ESan)
         print(String("\(edge73_Aqu)"))
-        XCTAssertEqual( edge73_Aqu.description, String("\(Node_73.id) -> \(Node_Aqu.id)  \(edge73_Aqu.weight)"))
+        #expect( edge73_Aqu.description == String("\(Node_73.id) -> \(Node_Aqu.id)  \(edge73_Aqu.weight)"))
     }
     
     
-    func testGraphNull() throws {
+    @Test func testGraphNull() throws {
         let graphNull = Graph()
-        XCTAssertEqual( graphNull.edges.count, 0 )
-        XCTAssertEqual( graphNull.nodes.count, 0 )
-        XCTAssertEqual( graphNull.count, 0)
-        XCTAssertEqual( graphNull.incidence.rows, 0)
-        XCTAssertEqual( graphNull.incidence.cols, 0)
-        XCTAssertEqual( graphNull.adjacency.rows, 0)
-        XCTAssertEqual( graphNull.adjacency.cols, 0)
+        #expect( graphNull.edges.count == 0 )
+        #expect( graphNull.nodes.count == 0 )
+        #expect( graphNull.count == 0)
+        #expect( graphNull.incidence.rows == 0)
+        #expect( graphNull.incidence.cols == 0)
+        #expect( graphNull.adjacency.rows == 0)
+        #expect( graphNull.adjacency.cols == 0)
     }
     
-    func testGraphDefault() throws {
+    @Test func testGraphDefault() throws {
         
-        let graph = Graph.DefaultGraph()
+        let graph = Graph.arapatGraph
         
-        XCTAssertEqual( graph.count, 39)
-        XCTAssertEqual( graph.edges.count, 142)
+        #expect( graph.count == 39)
+        #expect( graph.edges.count == 142)
         
         let adj = [0.0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -124,11 +123,11 @@ class GraphTests: XCTestCase {
                    0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,
                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
                    0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0]
-        let names = graph.nodes.map { $0.label }
+        let names = graph.nodes.map { $0.name }
         let A = Matrix( 39, 39, adj )
         A.rowNames = names
         A.colNames = names
-        XCTAssertEqual( graph.incidence, A)
+        #expect( graph.incidence == A)
         
         
         
@@ -138,9 +137,9 @@ class GraphTests: XCTestCase {
         B.rowNames = names
         B.colNames = names
         let E = graph.adjacency
-        XCTAssertEqual( E, B)
+        #expect( E == B)
         
-        
+        /*
         let cgd: [Double] = [0.0, 8.45324671861479, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, 11.3392934536416, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity,
                              8.45324671861479, 0.0, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, 12.362907286415, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity, .infinity,
                              .infinity, .infinity, 0.0, 7.55041335398658, 35.9988174048295, 32.825702507775, .infinity, 5.8760488520254, 2.90432059242197, 6.22081735120793, 20.697009008164, 7.7790023020327, 3.53104375426366, 10.8692956050696, 6.86593777199068, 5.59313456212082, .infinity, .infinity, .infinity, .infinity, .infinity, 32.5505763592043, 12.7564435939558, 8.52958487447125, 9.78953543402514, 32.6940291486852, 30.2153334742795, 6.89208739638408, .infinity, .infinity, .infinity, .infinity, 2.95907651440433, .infinity, 32.871919773087, 12.4566568735925, 29.065650276442, .infinity, 5.34144035791604,
@@ -182,11 +181,71 @@ class GraphTests: XCTestCase {
                              .infinity, .infinity, 5.34144035791604, 4.7935083082747, 34.0309116523766, 30.8577967553222, .infinity, 2.93265079330762, 2.78976954662207, 5.67245469644643, 18.7291032557111, 5.81109654957985, 5.48849638640027, 10.7921790376272, 6.78882120454827, 2.63342673975013, .infinity, .infinity, .infinity, .infinity, .infinity, 30.5826706067514, 8.5476602212188, 3.56433514791233, 4.4480950761091, 30.7261233962324, 28.2474277218267, 6.31537472549146, .infinity, .infinity, .infinity, .infinity, 2.38236384351171, .infinity, 30.9040140206342, 10.4887511211396, 27.0977445239891, .infinity, 0.0 ]
         
         
+    
         
-        let cGD = Matrix(39,39,cgd)
+        // let cGD = Matrix(39,39,cgd)
         
-        // XCTAssertEqual( graph.shortestPaths, cGD )
+        // #expect( graph.shortestPaths == cGD )
+        */
+    }
+ 
+    
+    @Test func testNodeAccess() throws {
+        let graph = Graph.arapatGraph
+        
+        let node101 = graph.node(name: "101")
+        #expect( node101 != nil, "Failed to find node 101")
+        #expect( (node101?.name ?? "Bob") == "101", "Got wrong node" )
+        
+        let node99 = graph.node(name: "99")
+        #expect( node99 == nil, "Found node not supposed to be there")
         
     }
     
+    @Test func testShortestPaths() throws {
+     
+        let graph = Graph.arapatGraph
+        
+        let dist1 = graph.allShortestPaths(from: "101", to: "102")
+        #expect( dist1.count == 1 )
+        if let path = dist1.first {
+            #expect( path.distance == 8.45324671861479, "Failed 101 <-> 102 distance" )
+            print(path)
+        }
+        
+    }
+    
+    
+    @Test func testNodeCentrality() throws {
+        
+        let graph = Graph.smallGraph
+        
+        let centralityIn = graph.degreeCentrality(direction: .In)
+        let centralityOut = graph.degreeCentrality(direction: .Out)
+        let centralityBoth = graph.degreeCentrality(direction: .Both)
+        
+        // A === B
+        //  =   =
+        //    C
+        //    |
+        //    D
+     
+        #expect( centralityIn == [2.0, 2.0, 2.0, 1.0 ] )
+        print("In: \(centralityIn)")
+        
+        print("Out: \(centralityOut)")
+        #expect( centralityOut == [2.0, 2.0, 3.0, 0.0] )
+        
+        print("Betweenness: \(centralityBoth)")
+        #expect( centralityBoth == [4.0, 4.0, 3.0, 1.0 ] )
+        
+    }
+    
+    @Test func testClosenessCentrality() throws {
+        let graph = Graph.smallGraph
+        let closenessCentrality = graph.closenessCentrality
+        print("Closeness: \(closenessCentrality)")
+        
+        #expect( closenessCentrality == [0.2727272727272727, 0.3333333333333333, 0.3333333333333333, 0.0] )
+    }
 }

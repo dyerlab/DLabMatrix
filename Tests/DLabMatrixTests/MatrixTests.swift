@@ -1,38 +1,47 @@
 //
 //  MatrixTests.swift
 //  Tests macOS
+//                      _                 _       _
+//                   __| |_   _  ___ _ __| | __ _| |__
+//                  / _` | | | |/ _ \ '__| |/ _` | '_ \
+//                 | (_| | |_| |  __/ |  | | (_| | |_) |
+//                  \__,_|\__, |\___|_|  |_|\__,_|_.__/
+//                        |_ _/
+//
+//         Making Population Genetic Software That Doesn't Suck
 //
 //  Created by Rodney Dyer on 6/7/21.
+//  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
 //
 
-import XCTest
+import Testing
 @testable import DLabMatrix
 
-class MatrixTests: XCTestCase {
+struct MatrixTests {
     
-    func testInit() {
+    @Test func testInit() {
         let M = Matrix(4, 4, 1.0)
         
-        XCTAssertEqual( M.cols, 4 )
-        XCTAssertEqual( M.rows, 4 )
-        XCTAssertEqual( M[0,0], 1.0)
-        XCTAssertEqual( M.sum, 16.0 )
+        #expect(M.cols == 4)
+        #expect(M.rows == 4)
+        #expect(M[0,0] == 1.0)
+        #expect(M.sum == 16.0)
         
-        XCTAssertEqual( M.diagonal, Vector.zeros(4) + 1.0)
-        XCTAssertEqual( M.diagonal.sum, 4.0 )
+        #expect(M.diagonal == Vector.zeros(4) + 1.0)
+        #expect(M.diagonal.sum == 4.0)
     
         
         let rsum = M.rowSum
-        XCTAssertEqual( rsum.sum, M.sum )
-        XCTAssertEqual( rsum.count, 4 )
-        XCTAssertEqual( rsum[0], 4.0 )
+        #expect(rsum.sum == M.sum)
+        #expect(rsum.count == 4)
+        #expect(rsum[0] == 4.0)
         
-        XCTAssertEqual( M.rowSum, M.colSum )
-        XCTAssertEqual( M.rowMatrix, Matrix(4, 4, 4.0) )
+        #expect(M.rowSum == M.colSum)
+        #expect(M.rowMatrix == Matrix(4, 4, 4.0))
         
     }
 
-    func testEquality() throws {
+    @Test func testEquality() {
         
         let X = Matrix( 2, 2, 1...4 )
         let Y = Matrix( 2, 2, 2...5 )
@@ -42,21 +51,21 @@ class MatrixTests: XCTestCase {
         Z[1,0] = 3
         Z[1,1] = 4
         
-        XCTAssertFalse( X == Y )
-        XCTAssertFalse( X == Z )
+        #expect(!(X == Y))
+        #expect(!(X == Z))
         
-        XCTAssertEqual( X, Z.submatrix([0,1], [0,1]) )
+        #expect(X == Z.submatrix([0,1], [0,1]))
     }
     
-    func testDesignMatrix() throws {
+    @Test func testDesignMatrix() {
         
         let populations = ["RVA","RVA","RVA","Olympia","Olympia"]
         let X = Matrix.DesignMatrix(strata: populations )
         
         
         
-        XCTAssertEqual( X.rows, 5)
-        XCTAssertEqual( X.cols, 2)
+        #expect(X.rows == 5)
+        #expect(X.cols == 2)
         
         let H = Matrix(5,2)
         H[0,1] = 1.0
@@ -65,12 +74,12 @@ class MatrixTests: XCTestCase {
         H[3,0] = 1.0
         H[4,0] = 1.0
         
-        XCTAssertEqual( X, H )
+        #expect(X == H)
         
     }
     
     
-    func testIdempotentDesignMatrix() throws {
+    @Test func testIdempotentDesignMatrix() {
         
         let populations = ["RVA","RVA","RVA","Olympia","Olympia"]
         let X = Matrix.IdempotentHatMatrix(strata: populations )
@@ -94,7 +103,7 @@ class MatrixTests: XCTestCase {
         H[4,3] = c2
         H[4,4] = c2
                 
-        XCTAssertTrue( H == X )
+        #expect(H == X)
         
         
     }
@@ -103,32 +112,32 @@ class MatrixTests: XCTestCase {
     
     
     
-    func testConversion_DistanceCovarianceDistance() throws {
+    @Test func testConversion_DistanceCovarianceDistance() {
         
         var D = Matrix(3,3,0.0)
         D[0,1] = 2.0
         D[0,2] = 5.0
         D = D + D.transpose
         
-        XCTAssertEqual( D[1,0], D[0,1] )
-        XCTAssertEqual( D.diagonal.sum, 0.0 )
-        XCTAssertEqual( D[1,2], 0.0 )
+        #expect(D[1,0] == D[0,1])
+        #expect(D.diagonal.sum == 0.0)
+        #expect(D[1,2] == 0.0)
         
         let C = D.asCovariance
-        XCTAssertEqual( C.rows, 3 )
-        XCTAssertEqual( C.cols, C.rows )
-        XCTAssertEqual( C[0,1], C[1,0] )
-        XCTAssertEqual( C[2,1], C[1,2] )
+        #expect(C.rows == 3)
+        #expect(C.cols == C.rows)
+        #expect(C[0,1] == C[1,0])
+        #expect(C[2,1] == C[1,2])
         
         let D1 = C.asDistance
-        XCTAssertEqual( (D.values - D1.values).sum, 0.0, accuracy: 0.00000000001 )
+        #expect( (D - D1).sum < 0.00000000001) 
         
     }
     
 
     
     
-    func testMatrixRSourceConvertable() throws {
+    @Test func testMatrixRSourceConvertable() {
         
         var D = Matrix(3,3,0.0)
         D[0,1] = 2.0
@@ -137,25 +146,21 @@ class MatrixTests: XCTestCase {
         
         // as Matrix Output
         let ret1 = D.toR()
-        XCTAssertFalse( ret1.isEmpty )
-        XCTAssertEqual( ret1, "matrix( c(0.0,2.0,5.0,2.0,0.0,0.0,5.0,0.0,0.0), ncol=3, nrow=3, byrow=TRUE)")
+        #expect(!ret1.isEmpty)
+        #expect(ret1 == "matrix( c(0.0,2.0,5.0,2.0,0.0,0.0,5.0,0.0,0.0), ncol=3, nrow=3, byrow=TRUE)")
         
         
         // as Tibble without Key
         D.colNames = ["First","Second","Third"]
         let ret2 = D.toR()
-        XCTAssertFalse( ret2.isEmpty )
-        XCTAssertEqual( ret2.count, 93)
+        #expect(!ret2.isEmpty)
+        #expect(ret2.count == 93)
         
         D.rowNames  = ["Olympia","Ames","Richmond"]
         let ret3 = D.toR()
-        XCTAssertEqual( ret3.count, 135)
+        #expect(ret3.count == 135)
     }
     
     
     
 }
-
-
-
-

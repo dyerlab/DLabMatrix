@@ -1,5 +1,3 @@
-//
-//  Operators.swift
 //                      _                 _       _
 //                   __| |_   _  ___ _ __| | __ _| |__
 //                  / _` | | | |/ _ \ '__| |/ _` | '_ \
@@ -8,16 +6,17 @@
 //                        |_ _/
 //
 //         Making Population Genetic Software That Doesn't Suck
-// 
-//  
-//  Created by Rodney Dyer on 6/10/21.
+//
+//  Direction.swift
+//  DLabMatrix
+//
+//  Created by Rodney Dyer on 5/22/25.
 //  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
 
-import Accelerate
+import Foundation
 
-
-/// Defines new operator for Matrix Multiplication.
-infix operator .* : MultiplicationPrecedence
-
-
-
+public enum Direction {
+    case In
+    case Out
+    case Both
+}

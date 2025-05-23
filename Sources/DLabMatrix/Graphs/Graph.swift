@@ -1,21 +1,65 @@
+//                      _                 _       _
+//                   __| |_   _  ___ _ __| | __ _| |__
+//                  / _` | | | |/ _ \ '__| |/ _` | '_ \
+//                 | (_| | |_| |  __/ |  | | (_| | |_) |
+//                  \__,_|\__, |\___|_|  |_|\__,_|_.__/
+//                        |_ _/
 //
-//  File.swift
-//  
+//         Making Population Genetic Software That Doesn't Suck
+//
+//  Graph.swift
+//
 //
 //  Created by Rodney Dyer on 5/6/22.
-//
+//  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
 
 import Foundation
 
-class Graph {
-    var nodes: [Node]
-    var edges: [Edge]
+public class Graph {
+    public var nodes: [Node]
+    public var edges: [Edge]
     
-    var count: Int {
+    public init() {
+        nodes = [Node]()
+        edges = [Edge]()
+    }
+    
+    public func newNode( label: String, size: Double, coord: Vector = Vector(), color: String = "#cc0000" ) {
+        self.nodes.append( Node(label: label, size: size, coord: coord, color: color) )
+    }
+    
+    public func newEdge( from: String, to: String, weight: Double, symmetric: Bool = true ) {
+        guard let idx1 = nodes.firstIndex(where: {$0.name == from} ) else { return }
+        guard let idx2 = nodes.firstIndex(where: {$0.name == to} )  else { return }
+        let node1 = nodes[idx1]
+        let node2 = nodes[idx2]
+        let edge = Edge(from: node1, to: node2, weight: weight)
+        self.edges.append( edge )
+        
+        if symmetric {
+            let edge2 = Edge(from: node2, to: node1, weight: weight)
+            self.edges.append( edge2 )
+        }
+    }
+    
+}
+
+// MARK: - Properties calculated from graph
+extension Graph {
+    
+    public var count: Int {
         return nodes.count
     }
     
-    var adjacency: Matrix {
+    public func node(id: UUID) -> Node? {
+        return self.nodes.first(where: { $0.id == id })
+    }
+    
+    public func node(name: String) -> Node? {
+        return self.nodes.first(where: { $0.name == name })
+    }
+    
+    public var adjacency: Matrix {
         let N = nodes.count
         let ret = Matrix(N, N)
         
@@ -26,13 +70,13 @@ class Graph {
             }
         })
         
-        ret.rowNames = nodes.map { $0.label }
-        ret.colNames = nodes.map { $0.label }
+        ret.rowNames = nodes.map { $0.name }
+        ret.colNames = nodes.map { $0.name }
         
         return ret
     }
     
-    var incidence: Matrix {
+    public var incidence: Matrix {
         let N = nodes.count
         let ret = Matrix(N, N)
         
@@ -43,39 +87,239 @@ class Graph {
             }
         })
         
-        ret.rowNames = nodes.map { $0.label }
-        ret.colNames = nodes.map { $0.label }
+        ret.rowNames = nodes.map { $0.name }
+        ret.colNames = nodes.map { $0.name }
         
         return ret
     }
     
-    var shortestPaths: Matrix {
-        return shortestPath(A: self.incidence )
-    }
+}
+
+
+// MARK: - Algorithms
+extension Graph {
     
-    init() {
-        nodes = [Node]()
-        edges = [Edge]()
-    }
-    
-    func newNode( label: String, size: Double, coord: Vector  ) {
-        self.nodes.append( Node(label: label, size: size, coord: coord) )
-    }
-    
-    func newEdge( from: String, to: String, weight: Double, symmetric: Bool = true ) {
-        guard let idx1 = nodes.firstIndex(where: {$0.label == from} ) else { return }
-        guard let idx2 = nodes.firstIndex(where: {$0.label == to} )  else { return }
-        var node1 = nodes[idx1]
-        var node2 = nodes[idx2]
-        let edge = Edge(from: node1, to: node2, weight: weight)
-        node1.edges.append( edge )
-        self.edges.append( edge )
+    /** Degree Centrality
+     The number of edges on a node.
+     - Parameters:
+     - Direction: One of Direction.In, Direction.Out, or Direction.Both
+     - Returns: Vector of counts
+     */
+    public func degreeCentrality(direction: Direction = .Both) -> Vector {
+        var ret = Vector(repeating: 0.0, count: self.count)
         
-        if symmetric {
-            let edge2 = Edge(from: node2, to: node1, weight: weight)
-            node2.edges.append( edge2 )
-            self.edges.append( edge2 )
+        for edge in self.edges {
+            if direction == .Out,
+               let idx = self.nodes.firstIndex(where: { $0.id == edge.from } ) {
+                ret[idx] += 1.0
+            }
+            else if direction == .In,
+                    let idx = self.nodes.firstIndex(where: { $0.id == edge.to } ) {
+                ret[idx] += 1.0
+            }
+            else if direction == .Both,
+                    let idx1 = self.nodes.firstIndex(where: { $0.id == edge.from } ),
+                    let idx2 = self.nodes.firstIndex(where: { $0.id == edge.to } ) {
+                ret[idx1] += 1.0
+                ret[idx2] += 1.0
+            }
         }
+        return ret
+    }
+    
+    
+    /// Closeness Centrality
+    /// Returns the closeness centrality of each node as a Vector.
+    /// For each node, sum the shortest distances to all other nodes, and compute the inverse of the average shortest distance.
+    public var closenessCentrality: Vector {
+        let n = nodes.count
+        var centrality = Vector(repeating: 0.0, count: n)
+        for (i, node) in nodes.enumerated() {
+            var sumDistances: Double = 0.0
+            var reachable: Int = 0
+            for (j, other) in nodes.enumerated() {
+                if i == j { continue }
+                let paths = allShortestPaths(from: node, to: other)
+                if let minDist = paths.first?.distance, minDist < Double.infinity {
+                    sumDistances += minDist
+                    reachable += 1
+                }
+            }
+            if reachable > 0 && sumDistances > 0.0 {
+                centrality[i] = Double(reachable) / sumDistances
+            } else {
+                centrality[i] = 0.0
+            }
+        }
+        return centrality
+    }
+    
+    
+    /** Shortest Path Matrix
+     The Floyd Warshall method for determining the shortest path between all pairs of nodes.
+     - Returns: Matrix of shortest path values.
+     */
+    public var shortestPaths: Matrix {
+        let A = self.incidence
+        let N = A.rows
+        let D = Matrix(N,N)
+        let gMax = A.values.sum + 1.0
+        D.rowNames = A.rowNames
+        D.colNames = A.colNames
+        for i in 0 ..< N {
+            for j in 0 ..< N {
+                if i != j {
+                    let val = A[i,j]
+                    if val > 0 {
+                        D[i,j] = val
+                    }
+                    else {
+                        D[i,j] = gMax
+                    }
+                }
+            }
+        }
+        for k in 0 ..< N {
+            for i in 0 ..< N {
+                for j in 0 ..< N {
+                    let curDist = D[i,j]
+                    let newDist = D[i,k] + D[k,j]
+                    if newDist < gMax {
+                        if curDist < gMax {
+                            D[i,j] = Double.minimum( curDist, newDist)
+                        } else {
+                            D[i,j] = newDist
+                        }
+                    }
+                }
+            }
+        }
+        for i in 0 ..< N {
+            for j in 0 ..< N {
+                if D[i,j] == gMax {
+                    D[i,j] = Double.infinity
+                }
+            }
+        }
+        return D
+    }
+    
+    /// Returns the betweenness centrality of each node as a Vector.
+    /// - Returns: A Vector corresponds to the node at the same index in the `nodes` array.
+    public var betweennessCentrality: Vector {
+        // Brandes' algorithm for betweenness centrality
+        let n = nodes.count
+        var centrality = Vector(repeating: 0.0, count: n)
+        // Map node UUID to its index in the nodes array
+        var nodeIndex: [UUID: Int] = [:]
+        for (i, node) in nodes.enumerated() {
+            nodeIndex[node.id] = i
+        }
+        for sIdx in 0..<n {
+            var stack: [Int] = []
+            var pred: [[Int]] = Array(repeating: [], count: n)
+            var sigma = Vector(repeating: 0.0, count: n)
+            var dist = Vector(repeating: -1.0, count: n)
+            sigma[sIdx] = 1.0
+            dist[sIdx] = 0.0
+            var queue: [Int] = [sIdx]
+            while !queue.isEmpty {
+                let v = queue.removeFirst()
+                stack.append(v)
+                // For each neighbor w of v
+                let vNode = nodes[v]
+                for edge in edgesFrom(node: vNode) {
+                    guard let w = nodeIndex[edge.to] else { continue }
+                    // Path discovery
+                    if dist[w] < 0 {
+                        dist[w] = dist[v] + 1.0
+                        queue.append(w)
+                    }
+                    // Path counting
+                    if dist[w] == dist[v] + 1.0 {
+                        sigma[w] += sigma[v]
+                        pred[w].append(v)
+                    }
+                }
+            }
+            var delta = Vector(repeating: 0.0, count: n)
+            while let w = stack.popLast() {
+                for v in pred[w] {
+                    delta[v] += (sigma[v] / sigma[w]) * (1.0 + delta[w])
+                }
+                if w != sIdx {
+                    centrality[w] += delta[w]
+                }
+            }
+        }
+        // Normalize if undirected
+        // For undirected graphs, divide by 2
+        for i in 0..<n {
+            centrality[i] /= 2.0
+        }
+        return centrality
+    }
+    
+    /// Overload function to pass node names instead of instances.
+    /// - Parameters:
+    ///   - from: The starting node name.
+    ///   - to: The ending node name.
+    /// - Returns: An array of all shortest paths (as Path objects) from `from` to `to`.
+    public func allShortestPaths(from: String, to: String) -> [Path] {
+        
+        if let fromNode = nodes.first( where: { $0.name == from }),
+           let toNode = nodes.first( where: { $0.name == to }) {
+            return allShortestPaths(from: fromNode, to: toNode)
+        } else {
+            return []
+        }
+        
+    }
+    
+    /// Returns all shortest paths from a start node to an end node.
+    /// - Parameters:
+    ///   - from: The starting node.
+    ///   - to: The ending node.
+    /// - Returns: An array of all shortest paths (as Path objects) from `from` to `to`.
+    public func allShortestPaths(from: Node, to: Node) -> [Path] {
+        // Use a BFS to find all shortest paths from `from` to `to`
+        // Each path is a list of nodes, and the shortest paths are those with minimal total weight.
+        // We'll use a queue of partial paths (as arrays of nodes), and track visited nodes with the minimal path length.
+        struct QueueElement {
+            let path: [Node]
+            let totalWeight: Double
+        }
+        var allPaths: [Path] = []
+        var minWeight: Double? = nil
+        var queue: [QueueElement] = [QueueElement(path: [from], totalWeight: 0.0)]
+        while !queue.isEmpty {
+            let elem = queue.removeFirst()
+            let last = elem.path.last!
+            if last == to {
+                if minWeight == nil || elem.totalWeight < minWeight! {
+                    minWeight = elem.totalWeight
+                    allPaths = [Path(source: elem.path.first!, destination: elem.path.last!, sequence: elem.path, distance: elem.totalWeight)]
+                } else if elem.totalWeight == minWeight! {
+                    allPaths.append(Path(source: elem.path.first!, destination: elem.path.last!, sequence: elem.path, distance: elem.totalWeight))
+                }
+                continue
+            }
+            // Prune paths longer than minWeight
+            if let minW = minWeight, elem.totalWeight > minW {
+                continue
+            }
+            for edge in self.edgesFrom(node: last) {
+                if let nextNode = self.nodes.first(where: { $0.id == edge.to }),
+                   !elem.path.contains(where: { $0.id == nextNode.id }) {
+                    queue.append(QueueElement(path: elem.path + [nextNode], totalWeight: elem.totalWeight + edge.weight))
+                }
+            }
+        }
+        return allPaths
+    }
+    
+    public func edgesFrom( node: Node ) -> [Edge] {
+        return self.edges.filter { $0.from == node.id }
     }
     
 }
@@ -84,8 +328,9 @@ class Graph {
 
 
 
+// MARK: - Printing
 extension Graph: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         var ret = String()
         nodes.forEach({ node in
             ret += String("\(node)\n")
@@ -99,9 +344,31 @@ extension Graph: CustomStringConvertible {
 
 
 
-extension Graph {
+
+
+
+// MARK: - Default Data
+
+public extension Graph {
     
-    static func DefaultGraph() -> Graph  {
+    static var smallGraph: Graph  {
+        let g = Graph()
+        
+        g.newNode(label: "A", size: 1.0, color: "#cc0000" )
+        g.newNode(label: "B", size: 1.0, color: "#00cc00" )
+        g.newNode(label: "C", size: 1.5, color: "#0000cc" )
+        g.newNode(label: "D", size: 2.0, color: "#cc00cc" )
+        
+        g.newEdge(from: "A", to: "B", weight: 1.0, symmetric: true )
+        g.newEdge(from: "B", to: "C", weight: 2.0, symmetric: true )
+        g.newEdge(from: "C", to: "A", weight: 3.0, symmetric: true )
+        g.newEdge(from: "C", to: "D", weight: 4.0, symmetric: false )
+        
+        return g
+        
+    }
+    
+    static var arapatGraph: Graph  {
         let graph = Graph()
         
         // Add the nodes

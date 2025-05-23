@@ -1,5 +1,3 @@
-//
-//  Vector.swift
 //                      _                 _       _
 //                   __| |_   _  ___ _ __| | __ _| |__
 //                  / _` | | | |/ _ \ '__| |/ _` | '_ \
@@ -7,23 +5,13 @@
 //                  \__,_|\__, |\___|_|  |_|\__,_|_.__/
 //                        |_ _/
 //
-//         Making Population Genetic Software That Doesn't Suck  
+//         Making Population Genetic Software That Doesn't Suck
 //
+//  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
+//
+//  Vector.swift
 //  Created by Rodney Dyer on 6/10/21.
-//  Copyright (c) 2021 The Dyer Laboratory.  All Rights Reserved.
-//
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 import Foundation
 import Accelerate
@@ -41,9 +29,9 @@ public typealias Vector = [Double]
 
 
 extension Vector {
-        
+    
     /// This function returns the sum of the vector
-    /// 
+    ///
     /// - Returns: A double value of everything added up.
     public var sum: Double {
         get {
@@ -68,7 +56,7 @@ extension Vector {
     }
     
     public var y: Double {
-        return self.count > 1 ? self[1] : 0.0 
+        return self.count > 1 ? self[1] : 0.0
     }
     
     /// A Normalized version of self
@@ -92,36 +80,30 @@ extension Vector {
     
     /// Self as a SCNVector3
     public var asSNCVector3: SCNVector3 {
-        
-        
-        
         switch self.count {
         case 0:
             return SCNVector3Make(0, 0, 0)
             
-            #if os(macOS)
-            
+#if os(macOS)
         case 1:
             return SCNVector3Make(CGFloat(self[0]), 0.0, 0.0)
         case 2:
             return SCNVector3Make(CGFloat(self[0]), CGFloat(self[1]), 0)
         default:
             return SCNVector3Make(CGFloat(self[0]), CGFloat(self[1]), CGFloat(self[2]))
-            
-            #elseif os(iOS)
+#elseif os(iOS)
         case 1:
             return SCNVector3Make(Float(self[0]), 0.0, 0.0)
         case 2:
             return SCNVector3Make(Float(self[0]), Float(self[1]), 0)
         default:
             return SCNVector3Make(Float(self[0]), Float(self[1]), Float(self[2]))
-
-            #endif
+#endif
         }
     }
     
-
-
+    
+    
     func smallest( other: Vector ) -> Vector {
         if self.count != other.count {
             return self
@@ -132,7 +114,7 @@ extension Vector {
         }
         return ret
     }
-
+    
     func largest( other: Vector ) -> Vector {
         if self.count != other.count {
             return self
@@ -143,7 +125,7 @@ extension Vector {
         }
         return ret
     }
-
+    
     
     /// This function constrains each of the values in the vector to the designated range
     ///  - Parameters:
@@ -161,7 +143,7 @@ extension Vector {
                 ret[i] = self[i]
             }
         }
-        return ret 
+        return ret
     }
     
     
@@ -176,7 +158,7 @@ extension Vector {
         }
         return ret
     }
-
+    
     /// Create a zero vector
     ///
     /// - Parameters length: How long you want the vector
@@ -184,7 +166,7 @@ extension Vector {
     static func zeros(_ length: Int ) -> Vector  {
         return Vector( repeating: 0.0, count: length)
     }
-
+    
     
     /// Creats a random vector values
     /// - Parameters:
@@ -204,8 +186,8 @@ extension Vector {
         
         return ret
     }
-
-
+    
+    
     
 }
 
