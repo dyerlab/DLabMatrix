@@ -16,11 +16,11 @@ import Foundation
 
 public struct Node : Codable, Identifiable, Hashable {
     public let id: UUID
-    public var name: String
+    public var label: String
     public var size: Double
     public var color: String
     
-    public var coordinate: GeoCoordinate?
+    public var location: GeoCoordinate?
     public var position: Vector?
     
     enum CodingKeys: String, CodingKey {
@@ -34,9 +34,9 @@ public struct Node : Codable, Identifiable, Hashable {
     
     public init(label: String, size: Double, coord: GeoCoordinate? = nil, position: Vector? = nil, color: String = "#cc00000") {
         self.id = UUID()
-        self.name = label
+        self.label = label
         self.size = size
-        self.coordinate = coord
+        self.location = coord
         self.position = position
         self.color = color
     }
@@ -45,9 +45,9 @@ public struct Node : Codable, Identifiable, Hashable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode( UUID.self, forKey: .id )
-        name = try values.decode( String.self, forKey: .label )
+        label = try values.decode( String.self, forKey: .label )
         size = try values.decode( Double.self, forKey: .size )
-        coordinate = try values.decodeIfPresent( GeoCoordinate.self, forKey: .coordinate )
+        location = try values.decodeIfPresent( GeoCoordinate.self, forKey: .coordinate )
         position = try values.decodeIfPresent( Vector.self, forKey: .position)
         color = try values.decode( String.self, forKey: .color )
     }
@@ -56,9 +56,9 @@ public struct Node : Codable, Identifiable, Hashable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id )
-        try container.encode(name, forKey: .label )
+        try container.encode(label, forKey: .label )
         try container.encode(size, forKey: .size )
-        try container.encodeIfPresent(coordinate, forKey: .coordinate )
+        try container.encodeIfPresent(location, forKey: .coordinate )
         try container.encodeIfPresent(position, forKey: .position)
         try container.encode(color, forKey: .color )
     }
@@ -77,6 +77,12 @@ extension Node: Equatable {
 
 extension Node: CustomStringConvertible {
     public var description: String {
-        return String("\(name): \(size) ( \(String(describing: self.coordinate) )")
+        var ret = String("\(label): \(size) ")
+        
+        if let loc = location {
+            ret += loc.description
+        }
+        
+        return ret
     }
 }

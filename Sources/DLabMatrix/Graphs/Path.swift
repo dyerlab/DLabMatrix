@@ -23,14 +23,14 @@ public struct Path: Identifiable, Hashable, CustomStringConvertible {
     public var source: Node
     public var destination: Node
     public var sequence: [Node]
-    public var distance: Double
+    public var length: Double
     
     public init(source: Node, destination: Node, sequence: [Node] = [], distance: Double = 0.0) {
         self.id = UUID()
         self.source = source
         self.destination = destination
         self.sequence = sequence
-        self.distance = distance
+        self.length = distance
     }
     
     public static func == (lhs: Path, rhs: Path) -> Bool {
@@ -42,12 +42,12 @@ public struct Path: Identifiable, Hashable, CustomStringConvertible {
     }
     
     public var description: String {
-        var ret = "\(source.name) -> \(destination.name); dist=\(distance); path = "
+        var ret = "\(source.label) -> \(destination.label); dist=\(length); path = "
         for node in sequence {
             if node != sequence.first! {
-                ret += " -> \(node.name)"
+                ret += " -> \(node.label)"
             } else {
-                ret += "\(node.name)"
+                ret += "\(node.label)"
             }
         }
         return ret

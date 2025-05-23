@@ -20,16 +20,14 @@ import DLabMatrix
 struct GraphTests {
     
     @Test func testNode() throws {
-        let Node_Aqu = Node(label: "Aqu", size:  13.267567610943, coord: [23.28550, -110.10429] )
-        let Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
+        let Node_Aqu = Node(label: "Aqu", size:  13.267567610943 )
+        let Node_73 = Node(label: "73", size:  7.10527775393008 )
         
-        #expect( Node_Aqu.coordinate!.count == 2)
-        #expect( Node_Aqu.name == "Aqu")
+        #expect( Node_Aqu.label == "Aqu")
         #expect( Node_Aqu.size == 13.267567610943)
-        #expect( Node_Aqu.coordinate! == [23.28550, -110.10429]  )
         
         print(String("\(Node_Aqu)"))
-        #expect(String("\(Node_Aqu)") == "Aqu: 13.267567610943 ( Optional([23.2855, -110.10429])")
+        #expect(String("\(Node_Aqu)") == "Aqu: 13.267567610943 ")
         #expect( Node_73 != Node_Aqu )
         
         let encoder = JSONEncoder()
@@ -54,9 +52,9 @@ struct GraphTests {
     
     @Test func testEdge()  {
         
-        let Node_Aqu = Node(label: "Aqu", size:  13.267567610943, coord: [23.28550, -110.10429] )
-        let Node_73 = Node(label: "73", size:  7.10527775393008, coord: [24.00789, -109.85071] )
-        let Node_ESan = Node(label: "ESan", size:  8.14010246388221, coord: [24.45879, -110.36857] )
+        let Node_Aqu = Node(label: "Aqu", size:  13.267567610943 )
+        let Node_73 = Node(label: "73", size:  7.10527775393008 )
+        let Node_ESan = Node(label: "ESan", size:  8.14010246388221 )
         let edge73_Aqu = Edge(from: Node_73, to: Node_Aqu, weight: 3.69526146781118)
         let edge73_ESan = Edge(from: Node_73, to: Node_ESan, weight: 3.80626949664509)
         
@@ -123,7 +121,7 @@ struct GraphTests {
                    0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,
                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
                    0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0]
-        let names = graph.nodes.map { $0.name }
+        let names = graph.nodes.map { $0.label }
         let A = Matrix( 39, 39, adj )
         A.rowNames = names
         A.colNames = names
@@ -195,7 +193,7 @@ struct GraphTests {
         
         let node101 = graph.node(name: "101")
         #expect( node101 != nil, "Failed to find node 101")
-        #expect( (node101?.name ?? "Bob") == "101", "Got wrong node" )
+        #expect( (node101?.label ?? "Bob") == "101", "Got wrong node" )
         
         let node99 = graph.node(name: "99")
         #expect( node99 == nil, "Found node not supposed to be there")
@@ -209,7 +207,7 @@ struct GraphTests {
         let dist1 = graph.allShortestPaths(from: "101", to: "102")
         #expect( dist1.count == 1 )
         if let path = dist1.first {
-            #expect( path.distance == 8.45324671861479, "Failed 101 <-> 102 distance" )
+            #expect( path.length == 8.45324671861479, "Failed 101 <-> 102 distance" )
             print(path)
         }
         

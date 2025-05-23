@@ -31,3 +31,11 @@ public struct GeoCoordinate: Identifiable, Codable, Hashable {
         return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
+
+extension GeoCoordinate: CustomStringConvertible {
+    
+    public var description: String {
+        return "(lat: \(latitude), lon: \(longitude))"
+    }
+    
+}

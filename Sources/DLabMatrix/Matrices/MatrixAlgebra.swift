@@ -8,8 +8,8 @@
 //                        |_ _/
 //
 //         Making Population Genetic Software That Doesn't Suck
-// 
-//  
+//
+//
 //
 //  Created by Rodney Dyer on 6/10/21.
 //  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
@@ -52,7 +52,7 @@ public func GeneralizedInverse(_ X: Matrix ) -> Matrix {
         print("Error on dgetrf_, could not invert matrix")
         return Matrix(0,0)
     }
-
+    
     return Y
 }
 
@@ -148,3 +148,57 @@ public func SingularValueDecomposition(_ A: Matrix) -> (U: Matrix, d: Vector, V:
     
     
 }
+
+
+// MARK: - Eigenvector Computation
+
+
+/// Computes the dominant eigenvector of the matrix using the power iteration method.
+/// - Parameters:
+///   - A: A square matrix
+///   - tolerance: The convergence tolerance.
+///   - maxIterations: Maximum number of iterations.
+/// - Returns: The normalized dominant eigenvector as a Vector, or nil if not converged.
+public func DominantEigenvector(A: Matrix, tolerance: Double = 1e-6, maxIterations: Int = 1000) -> Vector? {
+    
+    guard A.rows == A.cols, A.rows > 0 else { return nil }
+    
+    // Start with a random vector
+    var v = Vector((0..<A.cols).map { _ in Double.random(in: -1.0...1.0) })
+    
+    // Normalize
+    let norm = sqrt(v.reduce(0.0) { $0 + $1 * $1 })
+    if norm == 0.0 { return nil }
+    v = v.map { $0 / norm }
+    var prevV = v
+    
+    for _ in 0..<maxIterations {
+        // Multiply matrix by vector
+        var nextV = Vector(repeating: 0.0, count: A.cols)
+        for r in 0..<A.rows {
+            var sum = 0.0
+            for c in 0..<A.cols {
+                sum += A[r, c] * v[c]
+            }
+            nextV[r] = sum
+        }
+        // Normalize
+        let nextNorm = sqrt(nextV.reduce(0.0) { $0 + $1 * $1 })
+        if nextNorm == 0.0 { return nil }
+        nextV = nextV.map { $0 / nextNorm }
+        // Check for convergence
+        let diff = zip(nextV, prevV).map { abs($0 - $1) }.max() ?? 0.0
+        if diff < tolerance {
+            return nextV
+        }
+        prevV = nextV
+        v = nextV
+    }
+    
+    // If not converged, return nil
+    return nil
+}
+
+
+
+

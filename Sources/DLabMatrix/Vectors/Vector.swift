@@ -39,7 +39,6 @@ extension Vector {
         }
     }
     
-    
     /// This function returns the length of the vector
     ///
     /// - Returns: the length of the vector
@@ -50,21 +49,34 @@ extension Vector {
         }
     }
     
+    var minimum: Double? {
+        self.min()
+    }
     
+    var maximum: Double? {
+        self.max()
+    }
+    
+    
+    /// The first coordinate as if this were an (x,y) coordiante
     public var x: Double {
         return self.count > 0 ? self[0] : 0.0
     }
     
+    /// The second element as a (x,y) coordiante
     public var y: Double {
         return self.count > 1 ? self[1] : 0.0
+    }
+    
+    /// The third element as an (x,y,z) coordinate
+    public var z: Double {
+        return self.count > 2 ? self[2] : 0.0
     }
     
     /// A Normalized version of self
     public var normal: Vector {
         return self/magnitude
     }
-    
-    
     
     /// Returns the coordinate as a CGPoint in 2-space
     public var asCGPoint: CGPoint {
@@ -102,8 +114,6 @@ extension Vector {
         }
     }
     
-    
-    
     func smallest( other: Vector ) -> Vector {
         if self.count != other.count {
             return self
@@ -126,7 +136,6 @@ extension Vector {
         return ret
     }
     
-    
     /// This function constrains each of the values in the vector to the designated range
     ///  - Parameters:
     ///   - minimum: The minimum value to constrain the value to.
@@ -145,7 +154,6 @@ extension Vector {
         }
         return ret
     }
-    
     
     public func limitAnnealingMagnitude( temp: Double ) -> Vector {
         var ret = Vector.zeros( self.count )
@@ -167,7 +175,6 @@ extension Vector {
         return Vector( repeating: 0.0, count: length)
     }
     
-    
     /// Creats a random vector values
     /// - Parameters:
     ///   - length: The length of the vector
@@ -186,11 +193,16 @@ extension Vector {
         
         return ret
     }
+        
     
-    
+    public var studentized: Vector? {
+        guard let minVal = self.minimum,
+              let maxVal = self.maximum,
+              maxVal != 0 else { return nil }
+        return self.map { $0 / maxVal }
+    }
     
 }
-
 
 
 

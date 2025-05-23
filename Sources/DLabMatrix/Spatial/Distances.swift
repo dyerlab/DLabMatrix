@@ -30,3 +30,29 @@ public func distanceBetween(_ coordinate1: CLLocationCoordinate2D, _ coordinate2
     let location2 = CLLocation(latitude: coordinate2.latitude, longitude: coordinate2.longitude)
     return location1.distance(from: location2) / 1000.0 // Distance in kilometers
 }
+
+
+
+
+
+public extension Array where Element == Node {
+    
+    var PhysicalDistance: Matrix {
+        let N = self.count
+        var ret = Matrix(N,N, .infinity)
+        
+        for i in 0 ..< N {
+            if let coord1 = self[i].location?.coordinate {
+                for j in i ..< N {
+                    if let coord2 = self[j].location?.coordinate {
+                        let dist = distanceBetween( coord1, coord2 )
+                        ret[i,j] = dist
+                        ret[j,i] = dist
+                    }
+                }
+            }
+        }
+        return ret
+    }
+    
+}
