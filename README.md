@@ -22,11 +22,12 @@ Supporting multiple dependency managers makes maintaining a library exponentiall
 
 ---
 
-This package defines the following two objects:
-
+This package defines the following objects:
+ 
 - <a href="#Vector">Vector</a> A `Double` vector object representing a single numerical vector.
 - <a href="#Matrix">Matrix</a> A 2-dimensional matrix object that holds `Double` types.
 - <a href="#RangeEnum">Random Range Enumerator</a> A quick enumerator to define the range of random numbers to estimate.
+- <a href="#Graph">Graph</a> A graph-theoretic structure for network analysis.
 
 This package defines the following general functions:
 
@@ -173,7 +174,11 @@ Performs a singular value spectral decomposition on the matrix `A` resulting in 
 
 ## Versions Highlights
 
+1.0.4 - Added Graph Structures and graph-theoeretic algorithms.
 1.0.3 - Refactoring some stuff.  
 1.0.2 - added designMatrix, idepotentHatMatrix, asCovariance, asDistance, rowMatrix  
 1.0.1 - Added Unit tests.  
 1.0.0 - Intial Import  
+
+
+

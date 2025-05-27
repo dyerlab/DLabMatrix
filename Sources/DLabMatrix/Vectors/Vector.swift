@@ -39,6 +39,36 @@ extension Vector {
         }
     }
     
+    /// Estiamtes the mean of the values on the vector
+    ///
+    /// - Returns: A double
+    public var mean: Double {
+        guard !self.isEmpty else { return Double.nan }
+        return self.reduce(0,+) / Double( self.count )
+        
+    }
+    
+
+    /// Estimate of the variance of values in the vector.
+    ///
+    /// - Returns: A double indicating the variane or a NAN if empty.
+    public var variance: Double {
+        guard !self.isEmpty else { return Double.nan }
+        let mean = self.mean
+        let squaredDiffs = self.map { ($0 - mean) * ($0 - mean) }
+        return squaredDiffs.reduce(0.0, +) / Double(self.count - 1)
+    }
+    
+    /// Estimates the standard deviation of the values in the vector.
+    ///
+    /// - Returns: A double equal to the sqrt of the variance.
+    public var sd: Double {
+        let v = self.variance
+        if v.isNaN { return Double.nan }
+        return sqrt( v )
+    }
+    
+    
     /// This function returns the length of the vector
     ///
     /// - Returns: the length of the vector
@@ -193,14 +223,18 @@ extension Vector {
         
         return ret
     }
-        
+    
     
     public var studentized: Vector? {
-        guard let minVal = self.minimum,
-              let maxVal = self.maximum,
+        guard let minVal = self.minimum else { return nil }
+        let ret = self - minVal
+        guard let maxVal = ret.maximum,
               maxVal != 0 else { return nil }
-        return self.map { $0 / maxVal }
+        return ret.map { $0 / maxVal }
     }
+    
+
+    
     
 }
 

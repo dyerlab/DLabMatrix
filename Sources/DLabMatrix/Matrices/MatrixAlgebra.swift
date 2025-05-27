@@ -201,4 +201,284 @@ public func DominantEigenvector(A: Matrix, tolerance: Double = 1e-6, maxIteratio
 
 
 
+// MARK: - Methods that support Population Graph Construction
 
+/// Returns a matrix of group centroids (mean per column for each group in `grouping`)
+public func CentroidDistance(_ X: Matrix, grouping: [String]) -> Matrix {
+    // Ensure grouping length matches the number of rows
+    guard grouping.count == X.rows else {
+        fatalError("Your grouping and predictor variables should have the same number of rows.... Come on now.")
+    }
+
+    // Identify unique groups and sort them
+    let uniqueGroups = Array(Set(grouping)).sorted()
+    var centroids: [Double] = []
+    var rowNames: [String] = []
+
+    for group in uniqueGroups {
+        // Get row indices for this group
+        let indices = grouping.enumerated().compactMap { $0.element == group ? $0.offset : nil }
+
+        if indices.isEmpty { continue }
+
+        // Accumulate group rows
+        let groupMatrix = Matrix(indices.count, X.cols)
+        for (i, rowIndex) in indices.enumerated() {
+            for j in 0..<X.cols {
+                groupMatrix[i, j] = X[rowIndex, j]
+            }
+        }
+
+        // Calculate column means
+        let means = groupMatrix.colSum / Double(groupMatrix.rows)
+        centroids.append(contentsOf: means)
+        rowNames.append(group)
+    }
+
+    let result = Matrix(uniqueGroups.count, X.cols, Vector(centroids))
+    result.rowNames = rowNames
+    result.colNames = X.colNames
+    return result
+}
+
+
+
+
+/// Returns a vector of total variances (trace of covariance matrix) for each group in `grouping`
+public func CentroidVariance(_ X: Matrix, grouping: [String]) -> [String: Double] {
+    // Ensure grouping length matches the number of rows
+    guard grouping.count == X.rows else {
+        fatalError("Your grouping and predictor variables should have the same number of rows.... Come on now.")
+    }
+
+    // Identify unique groups and sort them
+    let uniqueGroups = Array(Set(grouping)).sorted()
+    var result: [String: Double] = [:]
+
+    for group in uniqueGroups {
+        // Get row indices for this group
+        let indices = grouping.enumerated().compactMap { $0.element == group ? $0.offset : nil }
+        guard !indices.isEmpty else { continue }
+
+        // Create a matrix for the subgroup
+        let groupMatrix = Matrix(indices.count, X.cols)
+        for (i, rowIndex) in indices.enumerated() {
+            for j in 0..<X.cols {
+                groupMatrix[i, j] = X[rowIndex, j]
+            }
+        }
+
+        // Center the matrix
+        groupMatrix.center()
+
+        // Compute covariance matrix
+        let covariance = (groupMatrix.transpose .* groupMatrix) / Double(groupMatrix.rows - 1)
+
+        // Compute trace (sum of diagonal)
+        let variance = covariance.trace
+
+        result[group] = variance
+    }
+
+    return result
+}
+
+
+/// A Swift equivalent to R's prcomp(x, retx = TRUE, center = TRUE, scale. = FALSE)
+/// Returns a tuple of standard deviations, rotation matrix (eigenvectors), and principal component scores.
+public func PRComp(_ X: Matrix) -> (sdev: Vector, rotation: Matrix, x: Matrix)? {
+    // Center the data
+    let centered = Matrix(X.rows, X.cols, X.values)
+    centered.center()
+
+    // Perform SVD
+    guard let s = SingularValueDecomposition(centered) else { return nil }
+
+    // s.d contains the singular values. Standard deviations = s.d / sqrt(n - 1)
+    let n = Double(centered.rows)
+    let sdev = s.d / sqrt(n - 1.0)
+
+    // s.V is the rotation matrix (eigenvectors)
+    let rotation = s.V
+
+    // Principal component scores = X_centered * rotation
+    let x = centered .* rotation
+
+    return (sdev, rotation, x)
+}
+
+
+/// Swift version of the popgraph function from Dyer & Nason (2004)
+/// - Parameters:
+///   - X: A data matrix (rows are samples, columns are features)
+///   - grouping: An array of population labels for each row
+///   - critVal: Critical chi-square value for edge retention
+///   - tol: Tolerance level for standard deviation and collinearity filtering
+/// - Returns: A weighted adjacency matrix representing the graph topology
+public func PopGraph(_ X: Matrix, grouping: [String], critVal: Double = 3.841459, tol: Double = 1.0e-4) -> Matrix {
+    let N = grouping.count
+    let groups = Array(Set(grouping)).sorted()
+    let K = groups.count
+
+    let EdgeStr = Matrix(K, K, 0.0)
+
+    guard let pca = PRComp(X) else { return EdgeStr }
+
+    let filteredIndices = (0..<pca.sdev.count).filter { pca.sdev[$0] > tol }
+    let mv = Matrix(X.rows, filteredIndices.count, 0.0)
+    for i in 0..<X.rows {
+        for (jIndex, j) in filteredIndices.enumerated() {
+            mv[i, jIndex] = pca.x[i, j]
+        }
+    }
+
+    let P = mv.cols
+    let popPriors = groups.map { g in Double(grouping.filter { $0 == g }.count) / Double(N) }
+
+    let popMeans = Matrix(K, P, 0.0)
+    for (i, g) in groups.enumerated() {
+        let indices = grouping.enumerated().compactMap { $0.element == g ? $0.offset : nil }
+        for j in 0..<P {
+            let colMean = indices.map { mv[$0, j] }.reduce(0.0, +) / Double(indices.count)
+            popMeans[i, j] = colMean
+        }
+    }
+
+    var sigmaW = Vector(repeating: 0.0, count: P)
+    for j in 0..<P {
+        var colResiduals = Vector(repeating: 0.0, count: N)
+        for i in 0..<N {
+            let groupIndex = groups.firstIndex(of: grouping[i])!
+            colResiduals[i] = mv[i, j] - popMeans[groupIndex, j]
+        }
+        sigmaW[j] = sqrt(colResiduals.variance)
+    }
+
+    for j in 0..<P {
+        if sigmaW[j] < tol {
+            sigmaW[j] = 1.0 // avoid division by near-zero
+        }
+    }
+
+    let scaling1 = Matrix.DiagonalMatrix(diagonal:  sigmaW.map { 1.0 / $0 } )
+    let fac = 1.0 / Double(N - K)
+    // Build a matrix where each row is the group mean for the sample's group
+    let groupMeansMatrix = Matrix(mv.rows, mv.cols)
+    for i in 0..<grouping.count {
+        if let groupIndex = groups.firstIndex(of: grouping[i]) {
+            for j in 0..<mv.cols {
+                groupMeansMatrix[i, j] = popMeans[groupIndex, j]
+            }
+        }
+    }
+
+    // Apply scaling and factor
+    let X1 = ((mv - groupMeansMatrix) * sqrt(fac)) .* scaling1
+    let X1SVD = SingularValueDecomposition(X1)!
+    let rank1 = X1SVD.d.filter { $0 > tol }.count
+    
+    let V1 = X1SVD.V.submatrix(Array(0..<X1SVD.V.rows), Array(0..<rank1))
+    let D1Inv = Matrix.DiagonalMatrix(diagonal: (0..<rank1).map { 1.0 / X1SVD.d[$0] })
+    let scaling2 = scaling1 .* V1 .* D1Inv
+
+    var mu = Vector(repeating: 0.0, count: P)
+    for i in 0..<K {
+        for j in 0..<P {
+            mu[j] += popPriors[i] * popMeans[i, j]
+        }
+    }
+
+    let centeredMeans = Matrix(K, P, 0.0)
+    for i in 0..<K {
+        for j in 0..<P {
+            centeredMeans[i, j] = popMeans[i, j] - mu[j]
+        }
+    }
+
+    let scalingVector = popPriors.map { sqrt(Double(N) * $0 / Double(K - 1)) }
+    let scalingMatrix = Matrix.DiagonalMatrix(diagonal: scalingVector)
+    let X2 = centeredMeans .* scalingMatrix .* scaling2
+    
+    let X2SVD = SingularValueDecomposition(X2)!
+    let rank2 = X2SVD.d.filter { $0 > tol * X2SVD.d[0] }.count
+    let finalScaling = scaling2 .* X2SVD.V.submatrix(Array(0..<X2SVD.V.rows), Array(0..<rank2))
+
+    let meanLD = (0..<P).map { j in
+        (0..<K).map { i in popMeans[i, j] }.reduce(0.0, +) / Double(K)
+    }
+
+    let LDValues = Matrix(X.rows, rank2, 0.0)
+    for i in 0..<X.rows {
+        for j in 0..<rank2 {
+            var sum = 0.0
+            for k in 0..<P {
+                sum += (mv[i, k] - meanLD[k]) * finalScaling[k, j]
+            }
+            LDValues[i, j] = sum
+        }
+    }
+
+    let allLD = CentroidDistance(LDValues, grouping: grouping)
+    // let allSD = CentroidVariance(LDValues, grouping: grouping)
+
+    let D = Matrix(K, K, 0.0)
+    for i in 0..<K {
+        for j in i..<K {
+            if i != j {
+                let p1 = allLD.getRow(r: i)
+                let p2 = allLD.getRow(r: j)
+                D[j, i] = sqrt(zip(p1, p2).map { pow($0 - $1, 2.0) }.reduce(0.0, +))
+                D[i, j] = D[j,i]
+            }
+        }
+    }
+
+    let totMean = D.values.filter { $0 > 0 }.reduce(0.0, +) / Double(K * (K - 1))
+    let colMeans = (0..<K).map { i in D.getCol(c: i).reduce(0.0, +) / Double(K) }
+    let colMeanMatrix = Matrix(K, K, Vector(repeating: 0.0, count: K * K))
+    let rowMeanMatrix = Matrix(K, K, Vector(repeating: 0.0, count: K * K))
+    for i in 0..<K {
+        for j in 0..<K {
+            colMeanMatrix[i, j] = colMeans[j]
+            rowMeanMatrix[i, j] = colMeans[i]
+        }
+    }
+
+    let C = (D - colMeanMatrix - rowMeanMatrix + totMean) * -0.5
+
+    let R = Matrix(K, K, 1.0)
+    for i in 0..<K {
+        for j in 0..<K where i != j {
+            R[i, j] = C[i, j] / sqrt(C[i, i] * C[j, j])
+        }
+    }
+
+    let RI = GeneralizedInverse(R)
+    let SRI = Matrix(K, K, 1.0)
+    for i in 0..<K {
+        for j in 0..<K where i != j {
+            SRI[i, j] = -1.0 * RI[i, j] / sqrt(RI[i, i] * RI[j, j])
+        }
+    }
+
+    for i in 0..<K {
+        for j in 0..<K {
+            SRI[i, j] = 1.0 - pow(SRI[i, j], 2.0)
+            if SRI[i, j] < 0.0 {
+                SRI[i, j] = 0.0
+            }
+        }
+    }
+
+    let EED = Matrix(K, K, 0.0)
+    for i in 0..<K {
+        for j in 0..<K {
+            EED[i, j] = -Double(N) * log(SRI[i, j])
+            if EED[i, j] <= critVal {
+                D[i, j] = 0.0
+            }
+        }
+    }
+
+    return D
+}

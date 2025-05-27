@@ -8,7 +8,7 @@
 //                        |_ _/
 //
 //         Making Population Genetic Software That Doesn't Suck
-// 
+//
 //
 //  Created by Rodney Dyer on 6/10/21.
 //  Copyright (c) 2021-2025 The Dyer Laboratory.  All Rights Reserved.
@@ -217,6 +217,7 @@ public class Matrix {
     }
     
     
+    
     /// Grab a row as a vector
     public func getRow( r: Int) -> Vector {
         var ret = Vector(repeating: 0.0, count: self.cols )
@@ -342,6 +343,15 @@ extension Matrix {
         
         return H
         
+    }
+    
+    public static func DiagonalMatrix( diagonal: Vector ) -> Matrix {
+        let N = diagonal.count
+        let X = Matrix(N,N,0.0)
+        for i in 0 ..< N {
+            X[i,i] = diagonal[i]
+        }
+        return X
     }
     
     

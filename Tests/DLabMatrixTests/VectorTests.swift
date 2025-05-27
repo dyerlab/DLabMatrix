@@ -95,5 +95,23 @@ struct VectorTests {
         #expect(r == "c(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)")
         
     }
+    
+    
+    @Test
+    func testStudentize() {
+        let w = Vector( [1,2,3,4,5] )
+        if let x = w.studentized {
+            print(x.description)
+            #expect( x.sum == 2.5 )
+        }
+
+        let y = Vector( [ -34, -23, -12, 10, 110] )
+        if let z = y.studentized {
+            print(z.description)
+            #expect( z.minimum == 0.0 )
+            #expect( z.maximum == 1.0 )
+        }
+        
+    }
 
 }

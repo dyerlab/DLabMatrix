@@ -39,7 +39,7 @@ public extension Array where Element == Node {
     
     var PhysicalDistance: Matrix {
         let N = self.count
-        var ret = Matrix(N,N, .infinity)
+        let ret = Matrix(N,N, .infinity)
         
         for i in 0 ..< N {
             if let coord1 = self[i].location?.coordinate {
