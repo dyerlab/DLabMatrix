@@ -16,7 +16,7 @@ import PackageDescription
 
 let package = Package(
     name: "DLabMatrix",
-    platforms: [.iOS(.v14), .macOS(.v10_15)],
+    platforms: [.iOS(.v14), .macOS(.v11)],
     products: [
         .library(
             name: "DLabMatrix",
